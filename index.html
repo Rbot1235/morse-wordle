@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Morse Wordle</title>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; margin-top: 40px; }
+  #morse { margin: 20px; font-size: 22px; letter-spacing: 4px; }
+  .row { display: flex; justify-content: center; margin: 5px; }
+  .cell {
+    width: 42px; height: 42px; margin: 3px;
+    line-height: 42px; border: 1px solid #ccc;
+    text-transform: uppercase; font-weight: bold;
+    font-size: 18px;
+  }
+  .correct { background: #6aaa64; color: white; }
+  .present { background: #c9b458; color: white; }
+  .absent { background: #787c7e; color: white; }
+  input { padding: 8px; font-size: 16px; text-transform: uppercase; }
+  button { padding: 8px 12px; font-size: 16px; }
+</style>
+</head>
+<body>
+
+<h2>Decode the Morse. Guess the word.</h2>
+<div id="morse"></div>
+
+<input id="guess" maxlength="12" autofocus />
+<button onclick="submitGuess()">Guess</button>
+
+<div id="grid"></div>
+
+<script>
+const morseMap = {
+  A: ".-", B: "-...", C: "-.-.", D: "-..", E: ".", F: "..-.",
+  G: "--.", H: "....", I: "..", J: ".---", K: "-.-", L: ".-..",
+  M: "--", N: "-.", O: "---", P: ".--.", Q: "--.-", R: ".-.",
+  S: "...", T: "-", U: "..-", V: "...-", W: ".--", X: "-..-",
+  Y: "-.--", Z: "--.."
+};
+
+// Decode Base64 from URL
+function decodeBase64(str) {
+  try {
+    return atob(str);
+  } catch {
+    return "HELLO";
+  }
+}
+
+const params = new URLSearchParams(window.location.search);
+const encoded = params.get("p");
+const word = encoded ? decodeBase64(encoded).toUpperCase() : "HELLO";
+
+// Convert word to Morse
+function toMorse(w) {
+  return w.split('').map(l => morseMap[l] || '').join(' ');
+}
+
+document.getElementById("morse").innerText = toMorse(word);
+
+// Wordle logic
+function submitGuess() {
+  const guessInput = document.getElementById("guess");
+  const guess = guessInput.value.toUpperCase();
+
+  if (guess.length !== word.length) return;
+
+  const row = document.createElement("div");
+  row.className = "row";
+
+  for (let i = 0; i < guess.length; i++) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.innerText = guess[i];
+
+    if (guess[i] === word[i]) {
+      cell.classList.add("correct");
+    } else if (word.includes(guess[i])) {
+      cell.classList.add("present");
+    } else {
+      cell.classList.add("absent");
+    }
+
+    row.appendChild(cell);
+  }
+
+  document.getElementById("grid").appendChild(row);
+  guessInput.value = "";
+
+  if (guess === word) {
+    setTimeout(() => alert("🎉 Correct! You found the winner!"), 200);
+  }
+}
+</script>
+
+</body>
+</html>
